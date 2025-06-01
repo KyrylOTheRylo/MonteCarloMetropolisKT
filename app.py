@@ -47,6 +47,7 @@ class IsingModel:
         self.T = T
         self.beta = 1.0 / T
         self.J = J
+        self.snapshots = {}
         if seed is not None:
             np.random.seed(seed)
 
@@ -61,7 +62,7 @@ class IsingModel:
         self.energy_history = []
         self.magnetization_history = []
 
-    def run(self, sweeps=1000, record_every=10):
+    def run(self, sweeps=1000, record_every=10, snapshot_steps=None):
         for sweep in range(sweeps):
             metropolis_sweep(self.spins, self.beta, self.J, self.L)
             if sweep % record_every == 0:
@@ -69,6 +70,8 @@ class IsingModel:
                 M = calc_magnetization(self.spins, self.L)
                 self.energy_history.append(E)
                 self.magnetization_history.append(M)
+            if snapshot_steps and sweep in snapshot_steps:
+                self.snapshots[sweep] = self.spins.copy()
 
 
 if __name__ == "__main__":
@@ -90,9 +93,11 @@ if __name__ == "__main__":
     model5.run(sweeps=15000, record_every=1)
     model6 = IsingModel(L=100, T=2, J=1.0, seed=42, init_type="all_down")
     model6.run(sweeps=15000, record_every=1)
-    plot_observables([model4, model5, model6], observable="magnetization",
-                     labels=["All Up", "Random", "All Down"],
+    model7 = IsingModel(L=100, T=2, J=1.0, seed=42, init_type="random")
+    model7.run(sweeps=15000, record_every=1)
+    plot_observables([model4, model5, model6, model7], observable="magnetization",
+                     labels=["All Up", "Random", "All Down" , "Random 2"],
                      title="Magnetization vs Time (T=2.0, beta = 0.5)")
-    plot_observables([model4, model5, model6], observable="energy",
-                     labels=["All Up", "Random", "All Down"],
+    plot_observables([model4, model5, model6, model7], observable="energy",
+                     labels=["All Up", "Random", "All Down", "Random 2"],
                      title="Magnetization vs Time (T=2.0, beta = 0.5)")
